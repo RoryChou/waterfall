@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			* {
+				padding: 0;
+				margin: 0;
+			}
+			.waterfall {
+				position: relative;
+			}
+			.waterfall-item {
+				position: absolute;
+				width: 200px;
+				padding: 4px;
+				border: 1px solid #888;
+			}
+			.waterfall-item img {
+				width: 100%;
+				display: block;
+			}
+		</style>
+	</head>
+	<body>
+		<!--
+			瀑布流原理：
+				1.布局使用据对定位
+				2.使用js生成内容
+				3.图片宽度一致
+				4.列数通过计算得到
+				5.用数组记录每一列的高度(寻找最小值使用)
+				6.
+		-->
+		<div class="waterfall">
+			
+		</div>
+		<script src="js/jquery.1.11.3.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			$(function(){
+				var content = "";
+				for( var i = 1;i < 70;i++){
+					content += '<div class="waterfall-item">'
+							+'<h2>waterfall</h2>'
+							+'<img src="img/'+ i +'.jpg"/>'
+							+'<p>dkalsjdklasjdlk1!</p>'
+							+'</div>';
+			
+				}
+				$('.waterfall').html(content);
+			})
+			//wait for imgs loaded
+			$(window).load(function(){
+				var waterfall = {
+					lists: $(".waterfall-item"),
+					box: $(".waterfall"),
+					unitWidth: 0,
+					rows:0,
+					spaceX:0,
+					spaceY:15,
+					position:[],
+					init: function(){
+						this.position = [];						
+						this.getRows();
+					},
+					//获取列数以及间距
+					getRows: function(){
+						var totalWidth = this.box.width();
+						this.unitWidth = $(".waterfall-item:first").outerWidth();						
+						this.rows = Math.floor(totalWidth/this.unitWidth);
+						this.spaceX = (totalWidth - this.rows*this.unitWidth)/(this.rows+1);
+						this.cols = Math.ceil(70/this.rows);
+						//console.log(this.spaceX,this.unitWidth);
+						this.firstCol();
+					},
+					firstCol: function(){						
+						for( var i = 0;i < this.rows;i++){
+							this.lists.eq(i).stop(true).animate({
+								left: (this.spaceX + this.unitWidth)*i+this.spaceX,
+								top: this.spaceY
+							},800);
+							this.position.push({
+								num:i,
+								top: this.lists.eq(i).outerHeight()+this.spaceY
+								});
+						}
+						
+						this.others();
+					},
+					others: function(){
+						//找到数组中最小的一个		
+						for(  var i = this.rows;i < 70;i++){
+							var min = this.position[0];
+							for( var j in this.position){
+								if(min.top > this.position[j].top){
+									min =  this.position[j]
+								}
+							}
+							this.lists.eq(i).stop(true).animate({
+								left: (this.spaceX + this.unitWidth)*min.num+this.spaceX,
+								top: this.spaceY + min.top
+							},800);
+							//ad top to position
+							min.top += this.lists.eq(i).outerHeight()+this.spaceY;							
+						}
+						/*for( var j = 1;j < this.cols;j++){
+							var newArr = [];
+							for( var i = this.rows*j;i < (this.rows)*(j+1);i++){
+								this.lists.eq(i).animate({
+									left: (this.spaceX + this.unitWidth)*(i-this.rows*j),
+									top: this.spaceY*(j+1) + this.position[i-this.rows*j]
+								},800);
+								newArr.push(this.lists.eq(i).outerHeight());
+							}
+							this.position = this.position.map(function(j,k){
+								 return j + newArr[k]
+							})
+						}*/
+						
+					},
+					
+				}
+				waterfall.init();
+				$(window).resize(function(){
+					waterfall.init();
+				})
+			})
+		</script>
+	</body>
+</html>
